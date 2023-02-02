@@ -1,0 +1,11 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build specific dirs
+dist/*
+limon.egg-info/*
+
+# IDE specific dirs
+.idea/*
