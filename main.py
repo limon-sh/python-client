@@ -4,7 +4,7 @@ from limon.exposition import generate_latest
 
 if __name__ == '__main__':
     http_requests = Counter(
-        'http_total_request',
+        'http_request',
         'Count of http requests',
         ['method', 'endpoint']
     )

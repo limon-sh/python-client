@@ -6,18 +6,29 @@ from .sample import Sample
 
 
 class Metric(Collector):
+    """Metric collector class.
+
+    Metric is a class that extends the Collector class and
+    is responsible for collecting data from a specific metric.
+    The class can be used to track various performance and
+    other metrics data in order to gain insights into system.
+
+    The metric must define a get method get_sample to the
+    measurement sample.
+    """
+
     type: str
 
     def __init__(
             self,
             name: str,
-            documentation: str,
+            description: str,
             labels: Iterable[str] = (),
             label_values: Iterable[str] = (),
             registry: Registry = REGISTRY
     ):
         self.name = name
-        self.documentation = documentation
+        self.description = description
 
         self._label_names = labels
         self._label_values = label_values
@@ -38,7 +49,7 @@ class Metric(Collector):
         if label_values not in self._metrics:
             self._metrics[label_values] = self.__class__(
                 name=self.name,
-                documentation=self.documentation,
+                description=self.description,
                 labels=self._label_names,
                 label_values=label_values
             )
@@ -51,11 +62,26 @@ class Metric(Collector):
 
     def get_sample(self) -> Iterable[Sample]:
         raise NotImplementedError(
-            f'Samples is not implemented for {self.__class__}'
+            f'Method get_sample() is not implemented for {self.__class__}'
         )
 
 
 class Counter(Metric):
+    """Incrementing counter metric.
+
+    Counter measure discrete events like count of http requests,
+    bytes send etc. The metric has an increasing value of 1
+    or the given value:
+
+    .. code-block:: python
+
+       from limon import Counter
+
+       c = Counter('count', 'Documentation')
+       c.inc()      # Increment by 1
+       c.inc(3.14)  # Increment by given value of `3.14`
+    """
+
     type = 'counter'
 
     def __init__(self, *args, **kwargs):
@@ -64,12 +90,23 @@ class Counter(Metric):
         self._value = 0
 
     def inc(self, amount: float = 1):
+        """Increment counter by the given amount or default value.
+
+        :param amount: amount for increment
+        :raises ValueError: when the amount value is less than zero
+        """
+
+        if amount < 0:
+            raise ValueError(
+                'Counter can only be increased by positive amount'
+            )
+
         self._value += amount
 
     def get_sample(self) -> Iterable[Sample]:
         return [
             Sample(
-                self.name,
+                '_total',
                 self._value,
                 dict(zip(self._label_names, self._label_values))
             )
