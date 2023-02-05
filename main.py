@@ -6,7 +6,9 @@ if __name__ == '__main__':
     http_requests = Counter(
         'http_total_request',
         'Count of http requests',
-        {'host': 'localhost'}
+        ['method', 'endpoint']
     )
     http_requests.inc(2)
+    http_requests.labels('post', '/auth').inc()
+    http_requests.labels('get', '/metrics').inc(3)
     print(generate_latest())

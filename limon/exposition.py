@@ -18,8 +18,6 @@ def generate_latest() -> str:
                     f'{metric.name}{{{build_labels(sample.labels)}}} {sample.value}'
                 )
             else:
-                output.append(
-                    f'{metric.name} {sample.value}'
-                )
+                output.append(f'{metric.name} {sample.value}')
 
     return '\n'.join(output)
