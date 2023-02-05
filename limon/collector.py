@@ -1,3 +1,4 @@
+import gc
 from abc import ABC, abstractmethod
 from typing import Iterable
 
@@ -36,3 +37,37 @@ class Collector(ABC):
         :return: Iterable sequence by metrics instances
         """
         ...
+
+
+class GCCollector(Collector):
+    """Collector for Garbage collection statistics."""
+
+    def collect(self) -> Iterable['Metric']:
+        from .metrics import Counter
+
+        collected = Counter(
+            'python_gc_objects_collected',
+            'Objects collected during gc',
+            labels=['generation']
+        )
+        uncollectable = Counter(
+            'python_gc_objects_uncollectable',
+            'Uncollectable object found during GC',
+            labels=['generation']
+        )
+        collections = Counter(
+            'python_gc_collections',
+            'Number of times this generation was collected',
+            labels=['generation']
+        )
+
+        for gen, stat in enumerate(gc.get_stats()):
+            generation = str(gen)
+            collected.labels(generation).inc(stat['collected'])
+            uncollectable.labels(generation).inc(stat['uncollectable'])
+            collections.labels(generation).inc(stat['collections'])
+
+        return [collected, uncollectable, collections]
+
+
+GC_COLLECTOR = GCCollector()
