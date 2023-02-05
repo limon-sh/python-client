@@ -1,8 +1,8 @@
-from typing import Optional, Iterable, NamedTuple
+from typing import Optional, NamedTuple, Dict
 
 
 class Sample(NamedTuple):
     name: str
     value: float
-    labels: Optional[Iterable[str]] = None
+    labels: Optional[Dict] = None
     timestamp: float = None

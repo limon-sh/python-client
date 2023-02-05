@@ -1,4 +1,5 @@
-from typing import Iterable, Optional
+from collections.abc import Iterable as IterableObject
+from typing import Iterable, Optional, Dict, Union
 
 from .collector import Collector
 from .registry import Registry, REGISTRY
@@ -12,12 +13,18 @@ class Metric(Collector):
             self,
             name: str,
             documentation: str,
-            labels: Optional[Iterable[str]] = (),
+            labels: Optional[Union[Iterable[str], Dict]] = None,
             registry: Registry = REGISTRY
     ):
         self.name = name
         self.documentation = documentation
-        self.labels = labels
+
+        if isinstance(labels, dict):
+            self._labels = labels
+        elif isinstance(labels, IterableObject):
+            self._labels = {str(label): '' for label in labels}
+        else:
+            self._labels = {}
 
         registry.register(self)
 
@@ -42,4 +49,4 @@ class Counter(Metric):
         self._value += amount
 
     def samples(self) -> Iterable[Sample]:
-        return [Sample(self.name, self._value)]
+        return [Sample(self.name, self._value, self._labels)]
