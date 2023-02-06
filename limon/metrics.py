@@ -5,6 +5,10 @@ from .registry import Registry, REGISTRY
 from .sample import Sample
 
 
+class MetricType:
+    COUNTER = 'counter'
+
+
 class Metric(Collector):
     """Metric collector class.
 
@@ -32,7 +36,7 @@ class Metric(Collector):
 
         self._label_names = labels
         self._label_values = label_values
-        self._metrics = {label_values: self}
+        self._metrics = {}
 
         if not self._label_values:
             registry.register(self)
@@ -46,7 +50,7 @@ class Metric(Collector):
         else:
             label_values = tuple(str(label) for label in args)
 
-        if label_values not in self._metrics:
+        if self._label_names and label_values not in self._metrics:
             self._metrics[label_values] = self.__class__(
                 name=self.name,
                 description=self.description,
@@ -54,11 +58,16 @@ class Metric(Collector):
                 label_values=label_values
             )
 
-        return self._metrics[label_values]
+            return self._metrics[label_values]
+
+        return self
 
     def samples(self) -> Iterable[Sample]:
-        for metric in self._metrics.values():
-            yield from metric.get_sample()
+        if self._metrics:
+            for metric in self._metrics.values():
+                yield from metric.get_sample()
+        else:
+            yield from self.get_sample()
 
     def get_sample(self) -> Iterable[Sample]:
         raise NotImplementedError(
@@ -106,7 +115,7 @@ class Counter(Metric):
     def get_sample(self) -> Iterable[Sample]:
         return [
             Sample(
-                '_total',
+                f'{self.name}_total',
                 self._value,
                 dict(zip(self._label_names, self._label_values))
             )

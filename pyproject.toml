@@ -5,10 +5,16 @@ authors = [
   { name="Andrei Kliatsko", email="andrey.daraschenka@gmail.com" },
 ]
 description = "Client of limon.sh monitoring system"
-requires-python = ">=2.7"
+requires-python = ">=3.5"
 
 [project.urls]
 "Homepage" = "https://github.com/limon-sh/python-client"
+
+[project.optional-dependencies]
+test = [
+    "pytest==7.2.1",
+    "pytest-cov==4.0.0",
+]
 
 [build-system]
 requires = ["setuptools"]

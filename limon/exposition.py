@@ -1,3 +1,4 @@
+from .metrics import MetricType
 from .registry import REGISTRY
 
 
@@ -15,15 +16,20 @@ def generate_latest() -> str:
     output = []
 
     for metric in REGISTRY.collect():
-        output.append(f'# HELP {metric.name} {metric.description}')
-        output.append(f'# TYPE {metric.name} {metric.type}')
+        if metric.type == MetricType.COUNTER:
+            metric_name = metric.name + '_total'
+        else:
+            metric_name = metric.name
+
+        output.append(f'# HELP {metric_name} {metric.description}')
+        output.append(f'# TYPE {metric_name} {metric.type}')
 
         for sample in metric.samples():
-            metric_name = metric.name + sample.suffix
+            sample_labels = ''
 
             if sample.labels:
-                metric_name += f'{{{build_labels(sample.labels)}}}'
+                sample_labels = f'{{{build_labels(sample.labels)}}}'
 
-            output.append(f'{metric_name} {sample.value}')
+            output.append(f'{metric_name}{sample_labels} {sample.value}')
 
     return '\n'.join(output)
